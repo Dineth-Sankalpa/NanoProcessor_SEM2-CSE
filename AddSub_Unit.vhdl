@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date: 03.03.2025 21:00:17
+-- Create Date: 15.05.2025 04:40:59
 -- Design Name: 
--- Module Name: RCA_4 - Behavioral
+-- Module Name: Add_Sub_4bit - Behavioral
 -- Project Name: 
 -- Target Devices: 
 -- Tool Versions: 
@@ -31,63 +31,55 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity RCA_4 is
-    Port (
-        A      : in  STD_LOGIC_VECTOR(3 downto 0);
-        B      : in  STD_LOGIC_VECTOR(3 downto 0);
-        C_in   : in  STD_LOGIC;
-        S      : out STD_LOGIC_VECTOR(3 downto 0);
-        C_out  : out STD_LOGIC
+entity Add_Sub_4bit is
+    Port ( 
+        A_AS : in STD_LOGIC_VECTOR (3 downto 0);
+        B_AS : in STD_LOGIC_VECTOR (3 downto 0);
+        Ctrl : in STD_LOGIC; -- to activate Substraction if Ctrl = '1'
+        S_AS : out STD_LOGIC_VECTOR (3 downto 0);
+        Zero : out STD_LOGIC;
+        Overflow : out STD_LOGIC
     );
-end RCA_4;
+end Add_Sub_4bit;
 
-architecture Behavioral of RCA_4 is
-
- component FA 
-     port ( 
-         A: in std_logic; 
-         B: in std_logic; 
-         C_in: in std_logic; 
-         S: out std_logic; 
-         C_out: out std_logic); 
-    end component; 
- 
-    signal FA_C : STD_LOGIC_VECTOR(2 downto 0); 
-
-begin 
-    FA_0 : FA 
-    port map ( 
-        A => A(0), 
-        B => B(0), 
-        C_in => C_in, -- use module input carry-in
-        S => S(0), 
-        C_out => FA_C(0)
-    ); 
+architecture Behavioral of Add_Sub_4bit is
+    signal B_inter, S_inter: STD_LOGIC_VECTOR(3 DOWNTO 0);
     
-    FA_1 : FA 
-    port map ( 
-        A => A(1), 
-        B => B(1), 
-        C_in => FA_C(0), 
-        S => S(1), 
-        C_out => FA_C(1)
-    ); 
-        
-    FA_2 : FA 
-    port map ( 
-        A => A(2), 
-        B => B(2), 
-        C_in => FA_C(1), 
-        S => S(2), 
-        C_out => FA_C(2)
-    ); 
+    -- RCA
+    component RCA_4
+        port (
+            A      : in  STD_LOGIC_VECTOR(3 downto 0);
+            B      : in  STD_LOGIC_VECTOR(3 downto 0);
+            C_in   : in  STD_LOGIC;
+            S      : out STD_LOGIC_VECTOR(3 downto 0);
+            C_out  : out STD_LOGIC
+        );
+    end component;
+
+begin    
+    B_inter(0) <= B_AS(0) xor Ctrl;
+    B_inter(1) <= B_AS(1) xor Ctrl;
+    B_inter(2) <= B_AS(2) xor Ctrl;
+    B_inter(3) <= B_AS(3) xor Ctrl;
     
-    FA_3 : FA 
-    port map ( 
-        A => A(3), 
-        B => B(3), 
-        C_in => FA_C(2), 
-        S => S(3), 
-        C_out => C_out
-    ); 
-end Behavioral; 
+    -- Ripple Carry Adder (4 Bit)
+    RCA_4_0 : RCA_4
+        port map (
+            A => A_AS,
+            B => B_inter,
+            C_in => Ctrl,
+            S => S_inter,
+            C_out => Overflow
+        );
+
+    process (S_inter)
+        begin
+            if (S_inter = "0000") then
+                Zero <= '1';
+            else
+                Zero <= '0';
+            end if;
+    end process;
+    
+    S_AS <= S_inter;
+end Behavioral;
