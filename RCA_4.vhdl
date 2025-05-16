@@ -11,7 +11,7 @@ entity RCA_4 is
     );
 end RCA_4;
 
-architecture Structural of RCA_4 is
+architecture Behavioral of RCA_4 is
     signal C : STD_LOGIC_VECTOR(4 downto 0);
     component FA
         Port (
@@ -32,4 +32,4 @@ begin
     FA3: FA port map(A => A(3), B => B(3), Cin => C(3), SUM => SUM(3), Cout => C(4));
 
     Cout <= C(4);
-end Structural;
+end Behavioral;
