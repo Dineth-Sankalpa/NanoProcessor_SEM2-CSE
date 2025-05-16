@@ -11,7 +11,7 @@ entity FA is
     );
 end FA;
 
-architecture Structural of FA is
+architecture Behavioral of FA is
     signal S1, C1, C2 : STD_LOGIC;
 
     component HA
@@ -27,4 +27,4 @@ begin
     HA1: HA port map(A => A, B => B, SUM => S1, CARRY => C1);
     HA2: HA port map(A => S1, B => Cin, SUM => SUM, CARRY => C2);
     Cout <= C1 or C2;
-end Structural;
+end Behavioral;
